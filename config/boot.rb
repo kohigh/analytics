@@ -3,6 +3,7 @@ require 'bundler/setup'
 
 Bundler.require
 require 'yaml'
+require 'logger'
 
 Dir['./lib/**/*.rb'].each { |f| require f }
 require_relative 'app'

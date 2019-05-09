@@ -27,6 +27,8 @@ module App
     end
 
     def stop(error = nil)
+      App.error "#{error}!" if error
+
       EM.add_timer(1) { Process.kill('INT', 0) }
     end
 
@@ -41,5 +43,9 @@ module App
 
     def_delegator Initializer, :load_app, :init
     def_delegator Destructor, :release_resources, :close
+
+    private
+
+    def_delegators AppLogger, :info, :error, :warning
   end
 end

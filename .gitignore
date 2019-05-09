@@ -1,3 +1,6 @@
 .idea/
 .ruby-gemset
+
+# config files
 pub_sub.yml
+google_analytics.yml
