@@ -22,7 +22,7 @@ module PubSub
           # when /.amplitude/ then Amplitude.new(msg)
           # when /.intercom/ then Intercom.new(msg)
           # when /.facebookpixel/ then FacebookPixel.new(msg)
-        end.track_event
+        end&.track_event
       end
     end
 
