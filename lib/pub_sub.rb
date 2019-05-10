@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module PubSub
   class << self
     def configure(url:, **params)
@@ -14,15 +15,17 @@ module PubSub
 
       @pubsub = @client.pubsub
 
-      @pubsub.psubscribe('analytics.*') do |meta, msg|
+      @pubsub.psubscribe('analytics.*') do |channel_name, msg|
         msg = JSON.parse(msg, symbolize_names: true)
 
-        case meta
-          when /.ga/ then GoogleAnalytics.new(msg)
-          # when /.amplitude/ then Amplitude.new(msg)
-          # when /.intercom/ then Intercom.new(msg)
-          # when /.facebookpixel/ then FacebookPixel.new(msg)
-        end&.track_event
+        channel_name.split('.')[1..-1].each do |service_name|
+          case service_name
+          when 'ga' then GoogleAnalytics.new(msg)
+          # when 'amp' then Amplitude.new(msg)
+          # when 'int' then Intercom.new(msg)
+          # when 'fbp' then FacebookPixel.new(msg)
+          end&.track_event
+        end
       end
     end
 
