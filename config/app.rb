@@ -5,6 +5,8 @@ module App
 
       def load_app
         succeed
+
+        App.info "App started in #{App.env}"
       end
     end
   end
@@ -15,6 +17,8 @@ module App
 
       def release_resources
         succeed
+
+        App.info "App closed!"
       end
     end
   end
@@ -46,6 +50,6 @@ module App
 
     private
 
-    def_delegators AppLogger, :info, :error, :warning
+    def_delegators AppLogger, :info, :error, :warn
   end
 end
