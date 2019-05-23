@@ -42,12 +42,8 @@ class Tapfiliate
   private
 
   def handle_error_response
-    return unless @attempt < 4
+    App.warn "TAP:#{@user_id} failed#{@attempt} with vid:#{@tap_vid} or amount:#{@amount}"
 
-    timeout = (TIMEOUT * @attempt += 1)
-
-    App.warn "TAP:#{@user_id} failed with vid:#{@tap_vid} or amount:#{@amount}"
-
-    EM.add_timer(timeout) { track_event }
+    EM.add_timer(TIMEOUT * @attempt += 1) { track_event } if @attempt < 4
   end
 end

@@ -47,12 +47,8 @@ class GoogleAnalytics
   private
 
   def handle_error_response
-    return unless @attempt < 4
-
-    timeout = (TIMEOUT * @attempt += 1)
-
     App.warn "GA:Failed with params: #{@params}. Returned #{@request.response_header.status} status."
 
-    EM.add_timer(timeout) { track_event }
+    EM.add_timer(TIMEOUT * @attempt += 1) { track_event } if @attempt < 4
   end
 end
