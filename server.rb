@@ -1,5 +1,6 @@
 require_relative 'config/boot'
 
+EM.epoll
 EM.run do
   trap('INT') do
     EM.add_timer(0) do
