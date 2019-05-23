@@ -15,7 +15,7 @@ class Tapfiliate
 
     @params = {
       head: {
-        'Content-Type' => 'text/plain;charset=UTF-8'
+        'Content-Type' => 'application/json'
       },
       body: {
         acc: ACCOUNT_ID,
