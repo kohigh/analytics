@@ -18,10 +18,10 @@ module PubSub
       @pubsub.psubscribe('analytics.events.*') do |channel_name, msg|
         msg = JSON.parse(msg, symbolize_names: true)
 
-        channel_name.split('.')[1..-1].each do |service_name|
+        channel_name.split('.')[2..-1].each do |service_name|
           case service_name
-          when 'ga' then GoogleAnalytics.new(msg)
-          when 'tap' then Tapfiliate.new(msg)
+          when 'ga' then GoogleAnalytics.new(msg[:ga])
+          when 'tap' then Tapfiliate.new(msg[:tap])
           # when 'amp' then Amplitude.new(msg)
           # when 'int' then Intercom.new(msg)
           # when 'fbp' then FacebookPixel.new(msg)
