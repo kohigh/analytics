@@ -37,7 +37,7 @@ class GoogleAnalytics
     @request.callback do
       case @request.response_header.status
       when 200 then App.info "GA:#{@client_id} tracked in #{@channel} with #{@action}"
-      when 100...200, 300...500 then App.warn "GA: problems with params #{@client_id} in #{@channel} with #{@action}"
+      when 100...200, 300...500 then App.error "GA#{@request.req.path}:#{@client_id} in #{@channel} with #{@action}"
       else handle_error_response
       end
     end
@@ -47,8 +47,12 @@ class GoogleAnalytics
   private
 
   def handle_error_response
-    App.warn "GA:Failed with params: #{@params}. Returned #{@request.response_header.status} status."
+    if @attempt < 4
+      EM.add_timer(TIMEOUT * @attempt += 1) { track_event }
 
-    EM.add_timer(TIMEOUT * @attempt += 1) { track_event } if @attempt < 4
+      App.warn "GA:#{@client_id} failed in channel:#{@channel} with action:#{@action}"
+    else
+      App.error "GA#{@request.req.path}:#{@client_id} channel:#{@channel}, action:#{@action}"
+    end
   end
 end
