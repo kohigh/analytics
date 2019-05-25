@@ -21,7 +21,7 @@ module PubSub
         channel_name.split('.')[2..-1].each do |service_name|
           case service_name
           when 'ga' then GoogleAnalytics.new(msg[:ga])
-          when 'tap' then Tapfiliate.new(msg[:tap])
+          when 'tap' then Fiber.new { Tapfiliate.new(msg[:tap]).track_event }.resume
           # when 'amp' then Amplitude.new(msg)
           # when 'int' then Intercom.new(msg)
           # when 'fbp' then FacebookPixel.new(msg)

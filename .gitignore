@@ -5,4 +5,5 @@
 pub_sub.yml
 google_analytics.yml
 tapfiliate.yml
+db.yml
 *.log

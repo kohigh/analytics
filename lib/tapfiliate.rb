@@ -1,8 +1,10 @@
+# frozen_string_literal: true
 class Tapfiliate
-  URL = 'https://tapfiliate.com/api/conversions/track/'
+  include EM::Deferrable
 
-  def self.configure(account_id:, timeout:, **params)
+  def self.configure(account_id:, api_key:, timeout:, **params)
     const_set('ACCOUNT_ID', account_id)
+    const_set('API_KEY', api_key)
     const_set('TIMEOUT', timeout)
   end
 
@@ -13,25 +15,23 @@ class Tapfiliate
     @tap_vid = tap_vid
     @amount = amount
 
-    @params = {
-      head: {
-        'Content-Type' => 'application/json'
-      },
-      body: {
-        acc: ACCOUNT_ID,
-        vid: [tap_vid],
-        tid: user_id,
-        tam: amount
-      }.to_json
-    }
+    @url, @params = if conversion_id = DB.get("tap_conversion#{@user_id}")
+                      commission_params(conversion_id)
+                    else
+                      callback { |id:, **params| DB.set("tap_conversion#{@user_id}", id) }
+
+                      conversion_params
+                    end
+
+    callback { App.info "TAP:#{@user_id} and vid:#{@tap_vid} tracked with amount:#{@amount}" }
   end
 
   def track_event
-    @request = EM::HttpRequest.new(URL).post(@params)
+    @request = EM::HttpRequest.new(@url).post(@params)
 
     @request.callback do
       case @request.response_header.status
-      when 200 then App.info "TAP:#{@user_id} and vid:#{@tap_vid} tracked with amount:#{@amount}"
+      when 200 then succeed(JSON.parse(@request.response, symbolize_names: true))
       when 100...200, 300...500 then App.warn "TAP:#{@user_id} problems with vid:#{@tap_vid} or amount:#{@amount}"
       else handle_error_response
       end
@@ -45,5 +45,35 @@ class Tapfiliate
     App.warn "TAP:#{@user_id} failed#{@attempt} with vid:#{@tap_vid} or amount:#{@amount}"
 
     EM.add_timer(TIMEOUT * @attempt += 1) { track_event } if @attempt < 4
+  end
+
+  def conversion_params
+    [
+      'https://tapfiliate.com/api/conversions/track/',
+      {
+        head: {
+          'Content-Type' => 'application/json'
+        },
+        body: {
+          acc: ACCOUNT_ID,
+          vid: [@tap_vid],
+          tid: @user_id,
+          tam: @amount
+        }.to_json
+      }
+    ]
+  end
+
+  def commission_params(conversion_id)
+    [
+      "https://api.tapfiliate.com/1.6/conversions/#{conversion_id}/commissions/",
+      {
+        head: {
+          'Content-Type' => 'application/json',
+          'Api-Key' => API_KEY
+        },
+        body: { conversion_sub_amount: @amount }.to_json
+      }
+    ]
   end
 end

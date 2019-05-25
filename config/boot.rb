@@ -5,6 +5,7 @@ Bundler.require
 require 'yaml'
 require 'json'
 require 'logger'
+require 'fiber'
 
 Dir['./lib/**/*.rb'].each { |f| require f }
 require_relative 'app'
