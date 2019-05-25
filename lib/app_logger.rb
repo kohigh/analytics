@@ -10,6 +10,6 @@ module AppLogger
       self
     end
 
-    def_delegators :@logger, :info, :error, :warn
+    def_delegators :@logger, :info, :error, :fatal, :warn
   end
 end
