@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class Tapfiliate
   include EM::Deferrable
 
@@ -32,7 +33,7 @@ class Tapfiliate
     @request.callback do
       case @request.response_header.status
       when 200 then succeed(JSON.parse(@request.response, symbolize_names: true))
-      when 100...200, 300...500 then App.warn "TAP:#{@user_id} problems with vid:#{@tap_vid} or amount:#{@amount}"
+      when 100...200, 300...500 then App.error "TAP#{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
       else handle_error_response
       end
     end
@@ -42,9 +43,13 @@ class Tapfiliate
   private
 
   def handle_error_response
-    App.warn "TAP:#{@user_id} failed#{@attempt} with vid:#{@tap_vid} or amount:#{@amount}"
+    if @attempt < 4
+      EM.add_timer(TIMEOUT * @attempt += 1) { track_event }
 
-    EM.add_timer(TIMEOUT * @attempt += 1) { track_event } if @attempt < 4
+      App.warn "TAP:#{@user_id} failed#{@attempt} with vid:#{@tap_vid} or amount:#{@amount}"
+    else
+      App.error "TAP#{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
+    end
   end
 
   def conversion_params

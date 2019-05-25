@@ -31,7 +31,7 @@ module App
     end
 
     def stop(error = nil)
-      App.error "#{error}!" if error
+      App.fatal "#{error}!" if error
 
       EM.add_timer(1) { Process.kill('INT', 0) }
     end
@@ -50,6 +50,6 @@ module App
 
     private
 
-    def_delegators AppLogger, :info, :error, :warn
+    def_delegators AppLogger, :info, :error, :fatal, :warn
   end
 end
