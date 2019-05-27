@@ -6,4 +6,9 @@ ruby '2.6.1'
 gem 'eventmachine'
 gem 'em-hiredis'
 gem 'em-http-request'
+
 gem 'pry-byebug' # TODO
+
+gem 'rspec'
+gem 'evented-spec'
+gem 'webmock'

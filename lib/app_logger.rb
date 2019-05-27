@@ -2,8 +2,10 @@ module AppLogger
   class << self
     extend Forwardable
 
+    attr_reader :output
+
     def configure(output = nil)
-      @logger = Logger.new(output ? "#{App.root}/log/#{output}" : STDOUT)
+      @logger = Logger.new(output ? @output = output : STDOUT)
 
       @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
 
