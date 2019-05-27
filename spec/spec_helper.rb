@@ -12,11 +12,7 @@ WebMock.disable_net_connect!(allow_localhost: true)
 callbacks = App::Initializer.instance_variable_get(:@callbacks).dup
 
 RSpec.configure do |config|
-  config.before(:each) do
-    _callbacks = App::Initializer.instance_variable_get(:@callbacks)
-
-    App::Initializer.instance_variable_set(:@callbacks, callbacks) if _callbacks.empty?
-  end
+  config.before(:each) { App::Initializer.instance_variable_set(:@callbacks, callbacks.dup) }
 
   config.before(:each) { AppLogger.configure StringIO.new }
 

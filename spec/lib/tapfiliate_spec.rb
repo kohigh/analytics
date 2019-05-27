@@ -38,7 +38,7 @@ RSpec.describe Tapfiliate do
 
       it 'create conversion when user is not registered in tapfiliate yet' do
         em do
-          App.init
+          subject
 
           delayed(0.1) { is_expected.to loggify('INFO', 'TAP:123 and vid:test tracked with amount:0') }
 
@@ -63,7 +63,7 @@ RSpec.describe Tapfiliate do
 
       it 'create commission when user has conversion in tapfiliate' do
         em do
-          App.init
+          subject
 
           delayed(0.1) { is_expected.to loggify('INFO', 'TAP:123 and vid:test tracked with amount:0') }
 
