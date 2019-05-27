@@ -16,10 +16,10 @@ class Tapfiliate
     @tap_vid = tap_vid
     @amount = amount
 
-    @url, @params = if conversion_id = DB.get("tap_conversion#{@user_id}")
+    @url, @params = if conversion_id = DB.get("tap_conversion#{@user_id}")#TODO change DB
                       commission_params(conversion_id)
                     else
-                      callback { |id:, **params| DB.set("tap_conversion#{@user_id}", id) }
+                      callback { |id:, **params| DB.set("tap_conversion#{@user_id}", id) }#TODO change DB
 
                       conversion_params
                     end
