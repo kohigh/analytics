@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class Tapfiliate
-  include EM::Deferrable
-
   def self.configure(account_id:, api_key:, timeout:, **params)
     const_set('ACCOUNT_ID', account_id)
     const_set('API_KEY', api_key)
@@ -21,8 +19,6 @@ class Tapfiliate
                     else
                       conversion_params
                     end
-
-    callback { App.info "TAP:#{@user_id} and vid:#{@tap_vid} tracked with amount:#{@amount}" }
   end
 
   def track_event
@@ -30,7 +26,7 @@ class Tapfiliate
 
     @request.callback do
       case @request.response_header.status
-      when 200 then succeed(JSON.parse(@request.response, symbolize_names: true))
+      when 200 then App.info "TAP:#{@user_id} and vid:#{@tap_vid} tracked with amount:#{@amount}"
       when 100...200, 300...500 then App.error "TAP#{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
       else handle_error_response(:track_event)
       end
