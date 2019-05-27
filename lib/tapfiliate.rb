@@ -16,11 +16,9 @@ class Tapfiliate
     @tap_vid = tap_vid
     @amount = amount
 
-    @url, @params = if conversion_id = DB.get("tap_conversion#{@user_id}")#TODO change DB
-                      commission_params(conversion_id)
+    @url, @params = if conversion = get_conversion
+                      commission_params(conversion[:id])
                     else
-                      callback { |id:, **params| DB.set("tap_conversion#{@user_id}", id) }#TODO change DB
-
                       conversion_params
                     end
 
@@ -34,17 +32,42 @@ class Tapfiliate
       case @request.response_header.status
       when 200 then succeed(JSON.parse(@request.response, symbolize_names: true))
       when 100...200, 300...500 then App.error "TAP#{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
-      else handle_error_response
+      else handle_error_response(:track_event)
       end
     end
-    @request.errback { handle_error_response }
+    @request.errback { handle_error_response(:track_event) }
   end
 
   private
 
-  def handle_error_response
+  def get_conversion
+    fiber = Fiber.current
+
+    @request = EM::HttpRequest.new('https://api.tapfiliate.com/1.6/conversions/').get(
+      {
+        head: {
+          'Accept' => 'application/json',
+          'Api-Key' => API_KEY
+        },
+        query: { external_id: @user_id }
+      }
+    )
+
+    @request.callback do
+      case @request.response_header.status
+      when 200 then fiber.resume(JSON.parse(@request.response, symbolize_names: true)[-1])
+      when 100...200, 300...500 then App.error "TAP#{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
+      else Fiber.new { handle_error_response(:get_conversion) }.resume
+      end
+    end
+    @request.errback { Fiber.new { handle_error_response(:get_conversion) }.resume }
+
+    Fiber.yield
+  end
+
+  def handle_error_response(request_name)
     if @attempt < 4
-      EM.add_timer(TIMEOUT * @attempt += 1) { track_event }
+      EM.add_timer(TIMEOUT * @attempt += 1) { send(request_name) }
 
       App.warn "TAP:#{@user_id} failed#{@attempt} with vid:#{@tap_vid} or amount:#{@amount}"
     else
