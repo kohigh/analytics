@@ -24,49 +24,102 @@ RSpec.describe Tapfiliate do
   end
 
   context 'initial tracking' do
-
     context 'unsuccessful' do
-      context 'error in passed params' do
-        let(:get_conversion_status) { 400 }
-        let(:get_conversion_response) { '[]' }
+      context 'get_conversion' do
+        context 'error in passed params' do
+          let(:get_conversion_status) { 400 }
+          let(:get_conversion_response) { '[]' }
 
-        it 'does not make retry but provide detailed info in log' do
-          em do
-            subject
+          it 'does not make retry but provide detailed info in log' do
+            em do
+              subject
 
-            delayed(0.1) { is_expected.to loggify('ERROR', 'TAP/1.6/conversions/:123 vid:test, amount:0') }
+              delayed(0.1) { is_expected.to loggify('ERROR', 'TAP GET /1.6/conversions/:123 vid:test, amount:0') }
 
-            done(0.1)
-          end
-        end
-      end
-
-      context 'tapfiliate returns 500 so we make retries with exponentially growing timeout' do
-        let(:get_conversion_status) { 500 }
-        let(:get_conversion_response) { '[]' }
-
-        it 'does not make retry but provide detailed info in log' do
-          em do
-            subject
-
-            delayed(0.2) do
-              is_expected.to loggify(
-                               'WARN',
-                               'TAP:123 failed:1 with vid:test or amount:0',
-                               'TAP:123 failed:2 with vid:test or amount:0',
-                               'TAP:123 failed:3 with vid:test or amount:0',
-                               'ERROR',
-                               'TAP/1.6/conversions/:123 vid:test, amount:0'
-                             )
-              expect(a_request(:get, get_conversion_url)).to have_been_made.times(4)
+              done(0.1)
             end
+          end
+        end
 
-            done(0.2)
+        context 'returns 500 so we make n retries with exponentially growing timeout' do
+          let(:get_conversion_status) { 500 }
+          let(:get_conversion_response) { '[]' }
+
+          it 'does not make retry but provide detailed info in log' do
+            em do
+              subject
+
+              delayed(0.2) do
+                is_expected.to loggify(
+                                   'WARN',
+                                   'TAP:123 failed:1 with vid:test or amount:0',
+                                   'TAP:123 failed:2 with vid:test or amount:0',
+                                   'TAP:123 failed:3 with vid:test or amount:0',
+                                   'ERROR',
+                                   'TAP GET /1.6/conversions/:123 vid:test, amount:0'
+                               )
+                expect(a_request(:get, get_conversion_url)).to have_been_made.times(4)
+              end
+
+              done(0.2)
+            end
           end
         end
       end
 
+      context 'post_conversion' do
+        let(:get_conversion_status) { 200 }
+        let(:get_conversion_response) { '[]' }
+
+        before do
+          stub_request(:post, "https://tapfiliate.com/api/conversions/track/").
+            with(
+              body: '{"acc":"test","vid":["test"],"tid":"123","tam":0}',
+              headers: {
+                'Content-Type'=>'application/json'
+              }).
+            to_return(status: post_conversion_status, body: "", headers: {})
+        end
+
+        context 'post_conversion error in passed params' do
+          let(:post_conversion_status) { 400 }
+
+          it 'does not make retry but provide detailed info in log' do
+            em do
+              subject
+
+              delayed(0.1) { is_expected.to loggify('ERROR', 'TAP POST /api/conversions/track/:123 vid:test, amount:0') }
+
+              done(0.1)
+            end
+          end
+        end
+
+        context 'returns 500 so we make n retries with exponentially growing timeout' do
+          let(:post_conversion_status) { 500 }
+
+          it 'does not make retry but provide detailed info in log' do
+            em do
+              subject
+
+              delayed(0.2) do
+                is_expected.to loggify(
+                                   'WARN',
+                                   'TAP:123 failed:1 with vid:test or amount:0',
+                                   'TAP:123 failed:2 with vid:test or amount:0',
+                                   'TAP:123 failed:3 with vid:test or amount:0',
+                                   'ERROR',
+                                   'TAP POST /api/conversions/track/:123 vid:test, amount:0'
+                               )
+              end
+
+              done(0.2)
+            end
+          end
+        end
+      end
     end
+
     context 'successful' do
       let(:get_conversion_status) { 200 }
       let(:get_conversion_response) { '[]' }

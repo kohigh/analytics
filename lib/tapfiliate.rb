@@ -27,11 +27,12 @@ class Tapfiliate
     @request.callback do
       case @request.response_header.status
       when 200 then App.info "TAP:#{@user_id} and vid:#{@tap_vid} tracked with amount:#{@amount}"
-      when 100...200, 300...500 then App.error "TAP#{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
-      else handle_error_response { get_conversion }
+      when 100...200, 300...500
+        App.error "TAP #{@request.req.method} #{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
+      else handle_error_response { track_event }
       end
     end
-    @request.errback { handle_error_response { get_conversion } }
+    @request.errback { handle_error_response { track_event } }
   end
 
   private
@@ -52,7 +53,8 @@ class Tapfiliate
     @request.callback do
       case @request.response_header.status
       when 200 then fiber.resume(JSON.parse(@request.response, symbolize_names: true)[-1])
-      when 100...200, 300...500 then App.error "TAP#{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
+      when 100...200, 300...500
+        App.error "TAP #{@request.req.method} #{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
       else handle_error_response { Fiber.new{ get_conversion }.resume }
       end
     end
@@ -67,7 +69,7 @@ class Tapfiliate
 
       EM.add_timer(TIMEOUT * @attempt += 1) { block.call }
     else
-      App.error "TAP#{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
+      App.error "TAP #{@request.req.method} #{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
     end
   end
 
