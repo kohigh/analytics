@@ -48,9 +48,9 @@ class GoogleAnalytics
 
   def handle_error_response
     if @attempt < 4
-      EM.add_timer(TIMEOUT * @attempt += 1) { track_event }
+      App.warn "GA:#{@client_id} failed:#{@attempt} in channel:#{@channel} with action:#{@action}"
 
-      App.warn "GA:#{@client_id} failed in channel:#{@channel} with action:#{@action}"
+      EM.add_timer(TIMEOUT * @attempt += 1) { track_event }
     else
       App.error "GA#{@request.req.path}:#{@client_id} channel:#{@channel}, action:#{@action}"
     end
