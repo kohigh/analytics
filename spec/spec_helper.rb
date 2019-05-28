@@ -25,8 +25,5 @@ RSpec.configure do |config|
 end
 
 RSpec::Matchers.define :loggify do |*expected|
-  match do
-    p AppLogger.output.string # TODO remove
-    expected.all? { |str| AppLogger.output.string.include?(str) }
-  end
+  match { expected.all? { |str| AppLogger.output.string.include?(str) } }
 end
