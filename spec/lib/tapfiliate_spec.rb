@@ -129,7 +129,7 @@ RSpec.describe Tapfiliate do
           em do
             subject
 
-            delayed(0.1) { is_expected.to loggify('ERROR', 'TAP/1.6/conversions/:123 vid:test, amount:0') }
+            delayed(0.1) { is_expected.to loggify('ERROR', 'TAP GET /1.6/conversions/:123 vid:test, amount:0') }
 
             done(0.1)
           end
@@ -151,7 +151,7 @@ RSpec.describe Tapfiliate do
                                'TAP:123 failed:2 with vid:test or amount:0',
                                'TAP:123 failed:3 with vid:test or amount:0',
                                'ERROR',
-                               'TAP/1.6/conversions/:123 vid:test, amount:0'
+                               'TAP GET /1.6/conversions/:123 vid:test, amount:0'
                              )
               expect(a_request(:get, get_conversion_url)).to have_been_made.times(4)
             end
