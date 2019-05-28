@@ -1,0 +1,11 @@
+development:
+  :tracking_id: UA-139588966-1
+  :timeout: 20
+
+test:
+  :tracking_id: test
+  :timeout: 0.1
+
+production:
+  :tracking_id: <%= ENV['GA_TRACKING_ID'] %>
+  :timeout: <%= ENV['GA_TRACKING_TIMEOUT'] %>

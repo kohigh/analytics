@@ -1,0 +1,14 @@
+development:
+  :account_id: 10338-35f085
+  :api_key: efe3a70b170c6e1413e851578057d86dce4ef535
+  :timeout: 1
+
+test:
+  :account_id: test
+  :api_key: test
+  :timeout: 0.01
+
+production:
+  :account_id: <%= ENV['TAP_ACCOUNT_ID'] %>
+  :api_key: <%= ENV['TAP_API_KEY'] %>
+  :timeout: <%= ENV['TAP_TIMEOUT'] %>
