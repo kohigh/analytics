@@ -97,6 +97,7 @@ RSpec.describe Tapfiliate do
 
         context 'returns 500 so we make n retries with exponentially growing timeout' do
           let(:post_conversion_status) { 500 }
+          let(:post_conversion_url) { 'https://tapfiliate.com/api/conversions/track/' }
 
           it 'does not make retry but provide detailed info in log' do
             em do
@@ -111,6 +112,11 @@ RSpec.describe Tapfiliate do
                                    'ERROR',
                                    'TAP POST /api/conversions/track/:123 vid:test, amount:0'
                                )
+
+                expect(a_request(:post, post_conversion_url).with(
+                    body: '{"acc":"test","vid":["test"],"tid":"123","tam":0}',
+                    headers: {'Content-Type'=>'application/json'}
+                )).to have_been_made.times(4)
               end
 
               done(0.2)
