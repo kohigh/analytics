@@ -120,6 +120,48 @@ RSpec.describe Tapfiliate do
       end
     end
 
+    context 'unsuccessful' do
+      context 'error in passed params' do
+        let(:get_conversion_status) { 400 }
+        let(:get_conversion_response) { '[]' }
+
+        it 'does not make retry but provide detailed info in log' do
+          em do
+            subject
+
+            delayed(0.1) { is_expected.to loggify('ERROR', 'TAP/1.6/conversions/:123 vid:test, amount:0') }
+
+            done(0.1)
+          end
+        end
+      end
+
+      context 'error in passed params' do
+        let(:get_conversion_status) { 500 }
+        let(:get_conversion_response) { '[]' }
+
+        it 'does not make retry but provide detailed info in log' do
+          em do
+            subject
+
+            delayed(0.2) do
+              is_expected.to loggify(
+                               'WARN',
+                               'TAP:123 failed:1 with vid:test or amount:0',
+                               'TAP:123 failed:2 with vid:test or amount:0',
+                               'TAP:123 failed:3 with vid:test or amount:0',
+                               'ERROR',
+                               'TAP/1.6/conversions/:123 vid:test, amount:0'
+                             )
+              expect(a_request(:get, get_conversion_url)).to have_been_made.times(4)
+            end
+
+            done(0.2)
+          end
+        end
+      end
+
+    end
     context 'successful' do
       let(:get_conversion_status) { 200 }
       let(:get_conversion_response) { '[]' }
