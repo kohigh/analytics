@@ -27,7 +27,7 @@ class Tapfiliate
     @request.callback do
       case @request.response_header.status
       when 200 then App.info "TAP:#{@user_id} and vid:#{@tap_vid} tracked with amount:#{@amount}"
-      when 100...200, 300...500 then App.error "TAP#{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
+      when 100...200, 300...500 then App.error "TAP:#{@user_id} #{@request.req.path} vid:#{@tap_vid}, amount:#{@amount}"
       else handle_error_response(:track_event)
       end
     end
@@ -52,7 +52,7 @@ class Tapfiliate
     @request.callback do
       case @request.response_header.status
       when 200 then fiber.resume(JSON.parse(@request.response, symbolize_names: true)[-1])
-      when 100...200, 300...500 then App.error "TAP#{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
+      when 100...200, 300...500 then App.error "TAP:#{@user_id} #{@request.req.path} vid:#{@tap_vid}, amount:#{@amount}"
       else Fiber.new { handle_error_response(:get_conversion) }.resume
       end
     end
@@ -67,7 +67,7 @@ class Tapfiliate
 
       App.warn "TAP:#{@user_id} failed#{@attempt} with vid:#{@tap_vid} or amount:#{@amount}"
     else
-      App.error "TAP#{@request.req.path}:#{@user_id} vid:#{@tap_vid}, amount:#{@amount}"
+      App.error "TAP:#{@user_id} #{@request.req.path} vid:#{@tap_vid}, amount:#{@amount}"
     end
   end
 

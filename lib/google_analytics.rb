@@ -37,7 +37,7 @@ class GoogleAnalytics
     @request.callback do
       case @request.response_header.status
       when 200 then App.info "GA:#{@client_id} tracked in #{@channel} with #{@action}"
-      when 100...200, 300...500 then App.error "GA#{@request.req.path}:#{@client_id} in #{@channel} with #{@action}"
+      when 100...200, 300...500 then App.error "GA:#{@client_id} #{@request.req.path} in #{@channel} with #{@action}"
       else handle_error_response
       end
     end
@@ -52,7 +52,7 @@ class GoogleAnalytics
 
       App.warn "GA:#{@client_id} failed in channel:#{@channel} with action:#{@action}"
     else
-      App.error "GA#{@request.req.path}:#{@client_id} channel:#{@channel}, action:#{@action}"
+      App.error "GA:#{@client_id} #{@request.req.path} channel:#{@channel}, action:#{@action}"
     end
   end
 end

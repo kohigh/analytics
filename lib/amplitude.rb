@@ -36,7 +36,7 @@ class Amplitude
     @request.callback do
       case @request.response_header.status
       when 200 then App.info "AMP:#{@user_id} tracked with #{@event_type}"
-      when 100...200, 300...500 then App.error "AMP#{@request.req.path}:#{@user_id} with #{@event_type}"
+      when 100...200, 300...500 then App.error "AMP:#{@user_id} #{@request.req.path} with #{@event_type}"
       else handle_error_response
       end
     end
@@ -52,7 +52,7 @@ class Amplitude
 
       App.warn "AMP:#{@user_id} failed with :#{@event_type}"
     else
-      App.error "AMP#{@request.req.path}:#{@user_id}, event:#{@event_type}"
+      App.error "AMP:#{@user_id} #{@request.req.path}, event:#{@event_type}"
     end
   end
 end
