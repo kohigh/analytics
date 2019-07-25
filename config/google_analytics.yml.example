@@ -1,5 +1,5 @@
 development:
-  :tracking_id: UA-139588966-1
+  :tracking_id: test
   :timeout: 20
 
 test:
